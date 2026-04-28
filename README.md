@@ -62,13 +62,18 @@ Restart or reload the target agent after installation.
 ## Install From A GitHub Path
 
 Agents that can install skills directly from GitHub can use the canonical paths
-under `skills/`. For example, install one skill from:
+under `skills/`. Always include `skills/shared` with any Atomic Nebula skill,
+because the shell helpers resolve workspace and API configuration through
+`shared/resolve-env.sh`.
+
+For example, install Tasks with:
 
 ```text
-https://github.com/cooksolutions/atomic-nebula-skills/tree/main/skills/atomicnebula-tasks
+skills/atomicnebula-tasks
+skills/shared
 ```
 
-Or install multiple paths from the same repository:
+Or install multiple skills from the same repository:
 
 ```text
 skills/atomicnebula-tasks
@@ -76,9 +81,6 @@ skills/atomicnebula-calendar
 skills/atomicnebula-email
 skills/shared
 ```
-
-`skills/shared` is required because the shell helpers resolve workspace and API
-configuration through `shared/resolve-env.sh`.
 
 ## Configure Access
 
