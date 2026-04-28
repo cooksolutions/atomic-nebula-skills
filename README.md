@@ -7,6 +7,10 @@ The canonical source is the root `skills/` directory. Consumer-specific folders
 are included as convenience views so agents can install from the layout they
 expect without maintaining separate copies.
 
+Maintainers should read `MAINTAINERS.md` before changing this repository. It
+documents how this public bundle is synced from the private CirceAura assistant
+skill sources and what validation should run before each push.
+
 ## Layout
 
 ```text
@@ -15,6 +19,8 @@ skills/                 Canonical Atomic Nebula skills and shared helpers
 .claude/skills/         Claude Code-style view, linked to skills/
 openclaw-skills/        OpenClaw-style view, linked to skills/
 install.sh              Local installer for Codex, Claude Code, or OpenClaw
+scripts/                Maintainer scripts for syncing and packaging
+MAINTAINERS.md          Update workflow for this public bundle
 ```
 
 ## Install
