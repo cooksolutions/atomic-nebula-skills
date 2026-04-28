@@ -1,0 +1,8 @@
+interface:
+  display_name: "Projects"
+  short_description: "Manage Atomic Nebula projects."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-projects to list, inspect, create, update, archive, or inspect schemas for Atomic Nebula projects."
+
+policy:
+  allow_implicit_invocation: true

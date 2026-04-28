@@ -1,0 +1,8 @@
+interface:
+  display_name: "Content"
+  short_description: "Manage Atomic Nebula content items."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-content to list, inspect, create, update, or link Atomic Nebula content items."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,8 @@
+interface:
+  display_name: "Task Write"
+  short_description: "Safely create and update tasks."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-task-write to create, update, assign, or complete Atomic Nebula tasks with the required write gates."
+
+policy:
+  allow_implicit_invocation: true

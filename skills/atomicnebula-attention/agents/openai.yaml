@@ -1,0 +1,8 @@
+interface:
+  display_name: "Attention"
+  short_description: "Review Atomic Nebula focus priorities."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-attention to inspect the Atomic Nebula focus queue and understand what needs attention now."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,8 @@
+interface:
+  display_name: "Attachments"
+  short_description: "Manage entity attachments in Atomic Nebula."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-attachments to list, upload, link, unlink, or fetch download URLs for Atomic Nebula entity attachments."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,8 @@
+interface:
+  display_name: "Digest"
+  short_description: "Get Atomic Nebula briefings and due items."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-digest to produce Atomic Nebula briefings, due reminders, and cross-channel context summaries."
+
+policy:
+  allow_implicit_invocation: true

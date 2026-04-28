@@ -1,0 +1,8 @@
+interface:
+  display_name: "Teams"
+  short_description: "Read and reply to Teams conversations."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-teams to inspect Microsoft Teams chats/messages or reply through Atomic Nebula assistant APIs."
+
+policy:
+  allow_implicit_invocation: true

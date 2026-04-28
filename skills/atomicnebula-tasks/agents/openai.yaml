@@ -1,0 +1,8 @@
+interface:
+  display_name: "Tasks"
+  short_description: "Query Atomic Nebula tasks and projects."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-tasks to query Atomic Nebula tasks, projects, subtasks, comments, due dates, and task status."
+
+policy:
+  allow_implicit_invocation: true

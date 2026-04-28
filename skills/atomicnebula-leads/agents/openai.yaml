@@ -1,0 +1,8 @@
+interface:
+  display_name: "Leads"
+  short_description: "Manage Atomic Nebula leads."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-leads to list, inspect, create, update, or delete Atomic Nebula leads."
+
+policy:
+  allow_implicit_invocation: true

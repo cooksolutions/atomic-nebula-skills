@@ -1,0 +1,8 @@
+interface:
+  display_name: "Context Graph"
+  short_description: "Use graph-backed Atomic Nebula context."
+  brand_color: "#4B29DA"
+  default_prompt: "Use $atomicnebula-context to understand Atomic Nebula people, threads, deals, projects, or relationships before using raw domain records."
+
+policy:
+  allow_implicit_invocation: true

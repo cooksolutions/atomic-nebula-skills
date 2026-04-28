@@ -1,0 +1,8 @@
+interface:
+  display_name: "Forms"
+  short_description: "Manage Atomic Nebula forms and submissions."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-forms to create, publish, inspect, or manage Atomic Nebula forms and submissions."
+
+policy:
+  allow_implicit_invocation: true

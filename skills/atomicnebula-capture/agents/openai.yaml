@@ -1,0 +1,8 @@
+interface:
+  display_name: "Capture"
+  short_description: "Save durable Atomic Nebula assistant context."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-capture to save durable decisions, corrections, preferences, implementation notes, follow-ups, or session summaries into Atomic Nebula context."
+
+policy:
+  allow_implicit_invocation: true

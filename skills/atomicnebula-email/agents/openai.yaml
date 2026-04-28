@@ -1,0 +1,8 @@
+interface:
+  display_name: "Email"
+  short_description: "Read and compose Atomic Nebula email."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-email to search, read, draft, send, reply, forward, or manage Atomic Nebula mailbox items."
+
+policy:
+  allow_implicit_invocation: true

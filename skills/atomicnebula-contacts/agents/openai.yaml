@@ -1,0 +1,8 @@
+interface:
+  display_name: "Contacts"
+  short_description: "Manage Atomic Nebula contacts."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-contacts to find, inspect, or safely manage Atomic Nebula contacts."
+
+policy:
+  allow_implicit_invocation: true

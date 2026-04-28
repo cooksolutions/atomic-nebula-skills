@@ -1,0 +1,8 @@
+interface:
+  display_name: "Calendar"
+  short_description: "Manage Atomic Nebula calendar events."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-calendar to inspect schedules, availability, meetings, and gated calendar changes in Atomic Nebula."
+
+policy:
+  allow_implicit_invocation: true
