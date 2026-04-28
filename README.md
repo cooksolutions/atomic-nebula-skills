@@ -1,37 +1,84 @@
-# Atomic Nebula Codex Skills
+# Atomic Nebula Skills
 
-This repository contains the Atomic Nebula skills for Codex.
+This repository contains the Atomic Nebula assistant skills for agents that can
+load filesystem-based skills, including Codex, Claude Code, and OpenClaw.
 
-It is intentionally small: it only packages the skills and their shared helper
-scripts so another user can install them into Codex and use Atomic Nebula from
-their agent.
+The canonical source is the root `skills/` directory. Consumer-specific folders
+are included as convenience views so agents can install from the layout they
+expect without maintaining separate copies.
+
+## Layout
+
+```text
+skills/                 Canonical Atomic Nebula skills and shared helpers
+.agents/skills/         Codex-style view, linked to skills/
+.claude/skills/         Claude Code-style view, linked to skills/
+openclaw-skills/        OpenClaw-style view, linked to skills/
+install.sh              Local installer for Codex, Claude Code, or OpenClaw
+```
 
 ## Install
 
-Clone the repository, then run:
+Clone the repository, then install for the agent you use.
+
+Codex:
 
 ```bash
-./install.sh
+./install.sh --target codex
 ```
 
-Restart Codex after installation.
-
-If you already have older copies installed, replace them with:
+Claude Code:
 
 ```bash
-./install.sh --force
+./install.sh --target claude
 ```
 
-The installer copies these directories into `~/.codex/skills` by default:
-
-- `skills/atomicnebula-*`
-- `skills/shared`
-
-You can install into a custom skills directory:
+OpenClaw:
 
 ```bash
-./install.sh --dest /path/to/skills
+./install.sh --target openclaw
 ```
+
+Install to all default locations:
+
+```bash
+./install.sh --target all
+```
+
+Replace older installed copies:
+
+```bash
+./install.sh --target codex --force
+```
+
+Install into a custom skills directory:
+
+```bash
+./install.sh --target codex --dest /path/to/skills
+```
+
+Restart or reload the target agent after installation.
+
+## Install From A GitHub Path
+
+Agents that can install skills directly from GitHub can use the canonical paths
+under `skills/`. For example, install one skill from:
+
+```text
+https://github.com/cooksolutions/atomic-nebula-skills/tree/main/skills/atomicnebula-tasks
+```
+
+Or install multiple paths from the same repository:
+
+```text
+skills/atomicnebula-tasks
+skills/atomicnebula-calendar
+skills/atomicnebula-email
+skills/shared
+```
+
+`skills/shared` is required because the shell helpers resolve workspace and API
+configuration through `shared/resolve-env.sh`.
 
 ## Configure Access
 
@@ -57,9 +104,12 @@ After credentials are configured, list available workspaces with:
 ~/.codex/skills/shared/an-env-list.sh
 ```
 
+Use the equivalent installed path for Claude Code or OpenClaw if you installed
+there instead.
+
 ## Usage
 
-Ask Codex to use an Atomic Nebula skill, for example:
+Ask your agent to use an Atomic Nebula skill, for example:
 
 - "Use Atomic Nebula to show my tasks."
 - "Use Atomic Nebula to draft an email."
