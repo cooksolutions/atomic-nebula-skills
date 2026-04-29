@@ -68,6 +68,8 @@ skills/atomicnebula-email/scripts/an-email.sh mailboxes
 # ── READ ───────────────────────────────────────────────────────────────────
 skills/atomicnebula-email/scripts/an-email.sh search "invoice from Acme"
 skills/atomicnebula-email/scripts/an-email.sh search --from "billing@acme.com" --has-attachments
+skills/atomicnebula-email/scripts/an-email.sh hydrate --provider exchange --mailbox james@company.com --exchange-id AQMk...
+skills/atomicnebula-email/scripts/an-email.sh hydrate --provider gmail --mailbox james@gmail.com --gmail-id 18f...
 skills/atomicnebula-email/scripts/an-email.sh list --mailbox james@company.com --limit 25
 skills/atomicnebula-email/scripts/an-email.sh get <emailId>
 skills/atomicnebula-email/scripts/an-email.sh content <emailId>
@@ -234,6 +236,7 @@ Always use the returned `address` value verbatim as `mailboxAddress` in send/rep
 | GET | `/emails/thread/:conversationId` | query: `mailboxAddress`, `limit` | Get conversation thread |
 | GET | `/emails/unread` | query: `folderId`, `mailboxAddress` | Unread count |
 | POST | `/emails/search` | `{query, from, to, hasAttachments, after, before, mailboxAddress, limit}` | Provider-native deep search across all mailboxes |
+| POST | `/emails/hydrate` | `{provider, mailboxAddress, exchangeId? OR gmailId?, forceRefresh?}` | Fetch a provider-visible result into AN and return the canonical `id` |
 
 ### Write
 
@@ -409,6 +412,11 @@ Search hits `POST /emails/search` and proxies to provider-native full-text searc
 - **Gmail**: maps to the `q` parameter with operators (`from:`, `to:`, `has:attachment`, `after:`, `before:`).
 
 Results across mailboxes are returned in parallel; per-mailbox failures (e.g. expired tokens) are returned in `metadata.errors` without failing the whole call. See `convex/products/atomicnebula/email/mailbox/search.ts` for full provider mapping.
+
+If a search result has no `id`, do **not** pass `exchangeId`/`gmailId` to `get`,
+`content`, `reply`, or `draft`. First run `hydrate` with the same mailbox and
+provider ID. Hydrate fetches the provider message, upserts it into AN, and
+returns the canonical `id` to use for follow-up operations.
 
 ## Limitations
 

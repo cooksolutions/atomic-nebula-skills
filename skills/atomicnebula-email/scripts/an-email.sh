@@ -51,6 +51,8 @@ Usage: an-email.sh <subcommand> [args] [--env <workspace>]
 READ
   search [query] [--from X] [--to X] [--has-attachments] [--after DATE]
                  [--before DATE] [--mailbox X] [--limit N]
+  hydrate       --provider exchange --mailbox X --exchange-id ID [--force-refresh]
+  hydrate       --provider gmail --mailbox X --gmail-id ID [--force-refresh]
   list           [--mailbox X] [--folder ID] [--contact ID] [--deal ID]
                  [--is-read true|false] [--has-attachments] [--limit N]
   get <emailId>
@@ -163,6 +165,10 @@ declare_flag_map() {
   _add_flag --mailbox        mailboxAddress    string
   _add_flag --search         search            string
   _add_flag --query          query             string
+  _add_flag --provider       provider          string
+  _add_flag --exchange-id    exchangeId        string
+  _add_flag --gmail-id       gmailId           string
+  _add_flag --force-refresh  forceRefresh      bool
   _add_flag --from           from              string
   _add_flag --to             to                array
   _add_flag --cc             cc                array
@@ -330,7 +336,7 @@ warn_missing_search_ids() {
   missing=$(printf '%s' "$body" | jq '[.data.results[]? | select((.id // "") == "")] | length' 2>/dev/null || echo 0)
   total=$(printf '%s' "$body" | jq '.data.results | length' 2>/dev/null || echo 0)
   if [[ "$missing" =~ ^[0-9]+$ ]] && [[ "$total" =~ ^[0-9]+$ ]] && [[ "$missing" -gt 0 ]]; then
-    echo "WARNING: $missing/$total search result(s) have no AN canonical id. Do not use exchangeId/gmailId with get/content/reply/draft endpoints. The provider found the message, but it is not currently addressable in AN; retry after mailbox sync or use list --search to look for an ingested copy." >&2
+    echo "WARNING: $missing/$total search result(s) have no AN canonical id. Do not use exchangeId/gmailId with get/content/reply/draft endpoints. Run hydrate --provider exchange --exchange-id <id> or hydrate --provider gmail --gmail-id <id> with the same --mailbox to create/refresh the AN row, then use the returned id." >&2
   fi
 }
 
@@ -420,6 +426,10 @@ case "$SUB" in
     RESPONSE=$(api_call POST /api/v1/atomicnebula/emails/search "$JSON_BODY")
     warn_missing_search_ids "$RESPONSE"
     printf '%s\n' "$RESPONSE"
+    ;;
+  hydrate)
+    build_json_body query "$@"
+    api_call POST /api/v1/atomicnebula/emails/hydrate "$JSON_BODY"
     ;;
   list)
     build_json_body search "$@"
