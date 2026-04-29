@@ -336,7 +336,7 @@ warn_missing_search_ids() {
   missing=$(printf '%s' "$body" | jq '[.data.results[]? | select((.id // "") == "")] | length' 2>/dev/null || echo 0)
   total=$(printf '%s' "$body" | jq '.data.results | length' 2>/dev/null || echo 0)
   if [[ "$missing" =~ ^[0-9]+$ ]] && [[ "$total" =~ ^[0-9]+$ ]] && [[ "$missing" -gt 0 ]]; then
-    echo "WARNING: $missing/$total search result(s) have no AN canonical id. Do not use exchangeId/gmailId with get/content/reply/draft endpoints. Run hydrate --provider exchange --exchange-id <id> or hydrate --provider gmail --gmail-id <id> with the same --mailbox to create/refresh the AN row, then use the returned id." >&2
+    echo "WARNING: $missing/$total search result(s) have no AN canonical id. Do not use exchangeId/gmailId with get/content/reply/forward/draft endpoints. Run hydrate --provider exchange --exchange-id <id> or hydrate --provider gmail --gmail-id <id> with the same --mailbox to create/refresh the AN row, then use the returned id for forward or draft forward." >&2
   fi
 }
 

@@ -414,9 +414,10 @@ Search hits `POST /emails/search` and proxies to provider-native full-text searc
 Results across mailboxes are returned in parallel; per-mailbox failures (e.g. expired tokens) are returned in `metadata.errors` without failing the whole call. See `convex/products/atomicnebula/email/mailbox/search.ts` for full provider mapping.
 
 If a search result has no `id`, do **not** pass `exchangeId`/`gmailId` to `get`,
-`content`, `reply`, or `draft`. First run `hydrate` with the same mailbox and
-provider ID. Hydrate fetches the provider message, upserts it into AN, and
-returns the canonical `id` to use for follow-up operations.
+`content`, `reply`, `forward`, `draft reply`, or `draft forward`. First run
+`hydrate` with the same mailbox and provider ID. Hydrate fetches the provider
+message, upserts it into AN, and returns the canonical `id` to use for follow-up
+operations.
 
 ## Limitations
 
