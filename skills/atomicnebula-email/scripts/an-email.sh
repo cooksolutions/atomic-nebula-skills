@@ -161,6 +161,8 @@ declare_flag_map() {
   FLAG_KEYS=()
   FLAG_TYPES=()
   _add_flag --mailbox        mailboxAddress    string
+  _add_flag --search         search            string
+  _add_flag --query          query             string
   _add_flag --from           from              string
   _add_flag --to             to                array
   _add_flag --cc             cc                array
@@ -209,6 +211,8 @@ lookup_flag() {
 # treated as the search query (preserves the historical `an-email-search.sh`
 # UX).
 build_json_body() {
+  local positional_key="${1:-query}"
+  if [[ $# -gt 0 ]]; then shift; fi
   declare_flag_map
   JSON_BODY="{}"
   POSITIONAL_ARG=""
@@ -268,9 +272,9 @@ build_json_body() {
         ;;
     esac
   done
-  # Promote positional arg to `query` if not already set.
-  if [[ -n "$POSITIONAL_ARG" ]] && ! echo "$JSON_BODY" | jq -e 'has("query")' >/dev/null 2>&1; then
-    JSON_BODY=$(echo "$JSON_BODY" | jq --arg q "$POSITIONAL_ARG" '. + {query: $q}')
+  # Promote positional arg to the command-specific search key if not already set.
+  if [[ -n "$POSITIONAL_ARG" ]] && ! echo "$JSON_BODY" | jq -e --arg k "$positional_key" 'has($k)' >/dev/null 2>&1; then
+    JSON_BODY=$(echo "$JSON_BODY" | jq --arg k "$positional_key" --arg q "$POSITIONAL_ARG" '. + {($k): $q}')
   fi
 }
 
@@ -318,6 +322,15 @@ api_call() {
     jq -n --arg status "$http_code" '{ok: true, status: ($status | tonumber)}'
   else
     echo "$body_str" | jq . 2>/dev/null || echo "$body_str"
+  fi
+}
+
+warn_missing_search_ids() {
+  local body="$1" missing total
+  missing=$(printf '%s' "$body" | jq '[.data.results[]? | select((.id // "") == "")] | length' 2>/dev/null || echo 0)
+  total=$(printf '%s' "$body" | jq '.data.results | length' 2>/dev/null || echo 0)
+  if [[ "$missing" =~ ^[0-9]+$ ]] && [[ "$total" =~ ^[0-9]+$ ]] && [[ "$missing" -gt 0 ]]; then
+    echo "WARNING: $missing/$total search result(s) have no AN canonical id. Do not use exchangeId/gmailId with get/content/reply/draft endpoints. The provider found the message, but it is not currently addressable in AN; retry after mailbox sync or use list --search to look for an ingested copy." >&2
   fi
 }
 
@@ -403,11 +416,13 @@ case "$SUB" in
 
   # ── READ ─────────────────────────────────────────────────────────────────
   search)
-    build_json_body "$@"
-    api_call POST /api/v1/atomicnebula/emails/search "$JSON_BODY"
+    build_json_body query "$@"
+    RESPONSE=$(api_call POST /api/v1/atomicnebula/emails/search "$JSON_BODY")
+    warn_missing_search_ids "$RESPONSE"
+    printf '%s\n' "$RESPONSE"
     ;;
   list)
-    build_json_body "$@"
+    build_json_body search "$@"
     QS=$(build_query_string "$JSON_BODY")
     if [[ -n "$QS" ]]; then
       api_call GET "/api/v1/atomicnebula/emails?$QS"
@@ -426,7 +441,7 @@ case "$SUB" in
   thread)
     [[ -z "${1:-}" ]] && { echo "ERROR: thread requires <conversationId>" >&2; exit 1; }
     CONV_ID="$1"; shift
-    build_json_body "$@"
+    build_json_body query "$@"
     QS=$(build_query_string "$JSON_BODY")
     if [[ -n "$QS" ]]; then
       api_call GET "/api/v1/atomicnebula/emails/thread/$CONV_ID?$QS"
@@ -435,7 +450,7 @@ case "$SUB" in
     fi
     ;;
   unread)
-    build_json_body "$@"
+    build_json_body query "$@"
     QS=$(build_query_string "$JSON_BODY")
     if [[ -n "$QS" ]]; then
       api_call GET "/api/v1/atomicnebula/emails/unread?$QS"
@@ -446,19 +461,19 @@ case "$SUB" in
 
   # ── WRITE ────────────────────────────────────────────────────────────────
   send)
-    build_json_body "$@"
+    build_json_body query "$@"
     api_call POST /api/v1/atomicnebula/emails/send "$JSON_BODY"
     ;;
   reply)
     [[ -z "${1:-}" ]] && { echo "ERROR: reply requires <emailId>" >&2; exit 1; }
     EID="$1"; shift
-    build_json_body "$@"
+    build_json_body query "$@"
     api_call POST "/api/v1/atomicnebula/emails/$EID/reply" "$JSON_BODY"
     ;;
   forward)
     [[ -z "${1:-}" ]] && { echo "ERROR: forward requires <emailId>" >&2; exit 1; }
     EID="$1"; shift
-    build_json_body "$@"
+    build_json_body query "$@"
     api_call POST "/api/v1/atomicnebula/emails/$EID/forward" "$JSON_BODY"
     ;;
   mark-read)
@@ -472,7 +487,7 @@ case "$SUB" in
   flag)
     [[ -z "${1:-}" ]] && { echo "ERROR: flag requires <emailId>" >&2; exit 1; }
     EID="$1"; shift
-    build_json_body "$@"
+    build_json_body query "$@"
     api_call POST "/api/v1/atomicnebula/emails/$EID/flag" "$JSON_BODY"
     ;;
   delete)
@@ -482,7 +497,7 @@ case "$SUB" in
   delete-thread)
     [[ -z "${1:-}" ]] && { echo "ERROR: delete-thread requires <conversationId>" >&2; exit 1; }
     CONV_ID="$1"; shift
-    build_json_body "$@"
+    build_json_body query "$@"
     QS=$(build_query_string "$JSON_BODY")
     if [[ -n "$QS" ]]; then
       api_call DELETE "/api/v1/atomicnebula/emails/thread/$CONV_ID?$QS"
@@ -493,7 +508,7 @@ case "$SUB" in
   promote-contact)
     [[ -z "${1:-}" ]] && { echo "ERROR: promote-contact requires <emailId>" >&2; exit 1; }
     EID="$1"; shift
-    build_json_body "$@"
+    build_json_body query "$@"
     api_call POST "/api/v1/atomicnebula/emails/$EID/promote-contact" "$JSON_BODY"
     ;;
 
@@ -504,26 +519,26 @@ case "$SUB" in
     shift
     case "$DSUB" in
       create)
-        build_json_body "$@"
+        build_json_body query "$@"
         default_body_type_html
         post_draft_and_wait POST /api/v1/atomicnebula/emails/draft "$JSON_BODY"
         ;;
       reply)
         [[ -z "${1:-}" ]] && { echo "ERROR: draft reply requires <emailId>" >&2; exit 1; }
         EID="$1"; shift
-        build_json_body "$@"
+        build_json_body query "$@"
         default_body_type_html
         post_draft_and_wait POST "/api/v1/atomicnebula/emails/$EID/draft-reply" "$JSON_BODY"
         ;;
       forward)
         [[ -z "${1:-}" ]] && { echo "ERROR: draft forward requires <emailId>" >&2; exit 1; }
         EID="$1"; shift
-        build_json_body "$@"
+        build_json_body query "$@"
         default_body_type_html
         post_draft_and_wait POST "/api/v1/atomicnebula/emails/$EID/draft-forward" "$JSON_BODY"
         ;;
       list)
-        build_json_body "$@"
+        build_json_body query "$@"
         QS=$(build_query_string "$JSON_BODY")
         if [[ -n "$QS" ]]; then
           api_call GET "/api/v1/atomicnebula/emails/drafts?$QS"
@@ -538,7 +553,7 @@ case "$SUB" in
       update)
         [[ -z "${1:-}" ]] && { echo "ERROR: draft update requires <draftId>" >&2; exit 1; }
         DID="$1"; shift
-        build_json_body "$@"
+        build_json_body query "$@"
         default_body_type_html
         api_call PATCH "/api/v1/atomicnebula/emails/drafts/$DID" "$JSON_BODY"
         ;;
