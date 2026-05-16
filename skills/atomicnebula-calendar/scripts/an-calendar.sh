@@ -74,6 +74,7 @@ List Options:
   --company <id>        Filter by company ID
   --deal <id>           Filter by deal ID
   --project <id>        Filter by project ID
+  --lead <id>           Filter by lead ID
   --owner <id>          Filter by owner ID
   --start-after <date>  Meetings starting after this date (ISO format)
   --start-before <date> Meetings starting before this date (ISO format)
@@ -81,7 +82,7 @@ List Options:
   --today               Shortcut for today's date range
   --week                Shortcut for this week's date range
   --limit <n>           Max results (default: 50)
-  --offset <n>          Pagination offset (default: 0)
+  --cursor <token>      nextCursor from the previous response
 
 Events Options:
   --today               Today's events
@@ -306,12 +307,13 @@ build_query_string() {
       --company) add_param "companyId" "$2"; shift 2 ;;
       --deal) add_param "dealId" "$2"; shift 2 ;;
       --project) add_param "projectId" "$2"; shift 2 ;;
+      --lead) add_param "leadId" "$2"; shift 2 ;;
       --owner) add_param "ownerId" "$2"; shift 2 ;;
       --start-after) add_param "startAfter" "$2"; shift 2 ;;
       --start-before) add_param "startBefore" "$2"; shift 2 ;;
       --search) add_param "searchTerm" "$2"; shift 2 ;;
       --limit) add_param "limit" "$2"; shift 2 ;;
-      --offset) add_param "offset" "$2"; shift 2 ;;
+      --cursor) add_param "cursor" "$2"; shift 2 ;;
       --today) today="1"; shift ;;
       --week) week="1"; shift ;;
       *) shift ;;

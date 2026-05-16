@@ -53,8 +53,8 @@ Commands:
 
 List Options:
   --search <term>       Search contacts
-  --page <n>            Page number (default: 1)
-  --page-size <n>       Page size (default: 50)
+  --limit <n>           Page size (default: 50, max: 100)
+  --cursor <token>      Opaque cursor from the previous response
 
 Write Options:
   --email <value>
@@ -143,21 +143,21 @@ parse_contact_fields() {
 
 list_contacts() {
   local search=""
-  local page_num="1"
-  local page_size="50"
+  local limit="50"
+  local cursor=""
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --search) search="$2"; shift 2 ;;
-      --page) page_num="$2"; shift 2 ;;
-      --page-size) page_size="$2"; shift 2 ;;
+      --limit) limit="$2"; shift 2 ;;
+      --cursor) cursor="$2"; shift 2 ;;
       *) echo "Unknown option: $1" >&2; exit 1 ;;
     esac
   done
 
   local query=""
-  query=$(append_query_param "$query" "pageNum" "$page_num")
-  query=$(append_query_param "$query" "pageSize" "$page_size")
+  query=$(append_query_param "$query" "limit" "$limit")
+  query=$(append_query_param "$query" "cursor" "$cursor")
   query=$(append_query_param "$query" "search" "$search")
 
   [[ -n "$ENV_PREFIX" ]] && echo "${ENV_PREFIX}Listing contacts from ${BASE_URL}" >&2

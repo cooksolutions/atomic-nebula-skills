@@ -89,7 +89,7 @@ find "$tmp/openclaw-skills" -maxdepth 2 -name SKILL.md | wc -l
 test -f "$tmp/openclaw-skills/shared/resolve-env.sh"
 ```
 
-Expected current count: `15` skills.
+Expected current count: `20` skills.
 
 Check executable modes:
 

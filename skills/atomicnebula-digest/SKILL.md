@@ -25,6 +25,17 @@ metadata:
 
 Get a comprehensive, layered workspace digest for AI assistants. This skill provides four views: Completed (what happened), Pending (what needs attention), Upcoming (what's coming), and Strategic (project context).
 
+## Timezone Handling
+
+Digest endpoints resolve an effective timezone in this order:
+
+1. Explicit `--timezone <iana>` / `timezone` query parameter
+2. The authenticated user's saved Atomic Nebula preference
+3. Workspace timezone
+4. `UTC`
+
+When presenting digest output, use `data.meta.timezone`, `data.meta.localTime`, and `data.meta.temporalContext` as the source of truth. Date buckets such as today, upcoming horizon days, meeting membership, and briefing local times are computed for that timezone. Raw timestamp fields remain UTC epoch milliseconds.
+
 ## Configuration
 
 Credentials resolve in this order:
@@ -64,6 +75,9 @@ skills/atomicnebula-digest/scripts/an-digest.sh today
 # Get briefing on dev
 skills/atomicnebula-digest/scripts/an-digest.sh --env dev briefing
 
+# Get briefing for an explicit IANA timezone override
+skills/atomicnebula-digest/scripts/an-digest.sh briefing --timezone Europe/London
+
 # Get due items within 30 minutes
 skills/atomicnebula-digest/scripts/an-digest.sh due --within 30
 
@@ -92,6 +106,7 @@ Returns:
 
 Options:
 - `--date <YYYY-MM-DD>` — Target date (default: today)
+- `--timezone <iana>` — Override the resolved user/workspace timezone
 - `--channels <list>` — Filter channels (e.g., "email,sms" or "all")
 - `--details` — Include full item lists instead of counts
 
@@ -107,6 +122,10 @@ Returns a condensed view with:
 - Top 5 attention items
 - Today's meetings and tasks due
 - Critical/overdue items
+- Resolved timezone, local time, and timezone context for interpreting date buckets
+
+Options:
+- `--timezone <iana>` — Override the resolved user/workspace timezone
 
 ### due
 
@@ -135,6 +154,7 @@ Returns a day-by-day view of upcoming tasks, meetings, and flagged days.
 
 Options:
 - `--days <n>` — Days to include (default: 5, max: 14)
+- `--timezone <iana>` — Override the resolved user/workspace timezone
 
 ### notified
 
@@ -164,6 +184,7 @@ curl -s -H "Authorization: Bearer $ATOMICNEBULA_API_KEY" \
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `date` | string | ISO date for digest (YYYY-MM-DD), defaults to today |
+| `timezone` | string | Optional IANA timezone override. Defaults to user preference, then workspace timezone, then UTC |
 | `daysAhead` | number | Days to include in upcoming horizon (default: 5, max: 14) |
 | `channels` | string | Comma-separated channel types or "all" (default: "all") |
 | `includeDetails` | boolean | Include full item lists vs counts only (default: false) |
@@ -254,6 +275,11 @@ All responses follow the standard API wrapper format with `success`, `data`, and
   "data": {
     "meta": {
       "date": "2024-01-15",
+      "localDate": "2024-01-15",
+      "localTime": "08:30",
+      "timezone": "Europe/London",
+      "timezoneSource": "userPreference",
+      "temporalContext": "Date buckets and formatted local times are computed for Europe/London; raw timestamps remain UTC epoch milliseconds.",
       "requestedChannels": ["all"],
       "generatedAt": 1705312800000
     },

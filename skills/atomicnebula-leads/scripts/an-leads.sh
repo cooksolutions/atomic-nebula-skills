@@ -75,7 +75,7 @@ list Options:
   --sort-by <field>
   --sort-order <asc|desc>
   --limit <n>
-  --offset <n>
+  --cursor <token>
 
 create Options:
   --email <text>             Required
@@ -313,7 +313,7 @@ build_list_url() {
       --sort-by) add_query_param "sortBy" "$2"; shift 2 ;;
       --sort-order) add_query_param "sortOrder" "$2"; shift 2 ;;
       --limit) add_query_param "limit" "$2"; shift 2 ;;
-      --offset) add_query_param "offset" "$2"; shift 2 ;;
+      --cursor) add_query_param "cursor" "$2"; shift 2 ;;
       *) echo "Unknown option: $1" >&2; exit 1 ;;
     esac
   done

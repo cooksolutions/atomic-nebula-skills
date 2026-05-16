@@ -1,6 +1,6 @@
 ---
 name: atomicnebula-calendar
-description: "Query and manage Atomic Nebula calendar events, meetings, and availability through natural language. Use when a user asks about their schedule, upcoming meetings, availability, event details, or wants calendar appointments created/updated/deleted. Supports filtering by date range, status, contact, company, and deal. Use --env <workspace> to target a specific workspace (e.g., --env dev)."
+description: "Query and manage Atomic Nebula calendar events, meetings, and availability through natural language. Use when a user asks about their schedule, upcoming meetings, availability, event details, or wants calendar appointments created/updated/deleted. Supports filtering by date range, status, contact, company, deal, project, owner, and lead. Use --env <workspace> to target a specific workspace (e.g., --env dev)."
 metadata:
   {
     "openclaw":
@@ -90,6 +90,8 @@ skills/atomicnebula-calendar/scripts/an-calendar.sh delete CAL-123 --send-update
 ```
 
 **IMPORTANT**: For "what's on my calendar today?" use `events --today` or `upcoming`, NOT `list --today`. The `list` command only shows CRM-created meetings, NOT synced Exchange/Google calendar events. The user's actual calendar is in `events`.
+
+**For full CRM meeting management** (transcripts, action items, open loops, promote-to-task) use the **`atomicnebula-meetings` skill** — that surface owns the `an_meetings` lifecycle. This skill is for the calendar diary and provider-backed appointments only.
 
 ## Operations
 
@@ -181,7 +183,7 @@ curl -s -H "Authorization: Bearer $ATOMICNEBULA_API_KEY" \
 | `startBefore` | string | ISO date string - meetings starting before this time |
 | `searchTerm` | string | Search in title/description |
 | `limit` | number | Max results (default: 50) |
-| `offset` | number | Pagination offset (default: 0) |
+| `cursor` | string | `nextCursor` from the previous response |
 
 #### Example: Meetings this week
 
@@ -211,19 +213,19 @@ The response includes: title, description, location, attendees, startsAt, endsAt
 
 ## Pagination
 
-For large result sets, use `limit` and `offset`:
+For large result sets, use `limit` and `cursor`:
 
 ```bash
 # First page
 curl -s -H "Authorization: Bearer $ATOMICNEBULA_API_KEY" \
-  "${ATOMICNEBULA_BASE_URL:-https://convex-actions.circeaura.com}/api/v1/atomicnebula/meetings?limit=50&offset=0" | jq '.items'
+  "${ATOMICNEBULA_BASE_URL:-https://convex-actions.circeaura.com}/api/v1/atomicnebula/meetings?limit=50" | jq '.nextCursor, .items'
 
-# Second page
+# Second page (replace <nextCursor> with the token from the first response)
 curl -s -H "Authorization: Bearer $ATOMICNEBULA_API_KEY" \
-  "${ATOMICNEBULA_BASE_URL:-https://convex-actions.circeaura.com}/api/v1/atomicnebula/meetings?limit=50&offset=50" | jq '.items'
+  "${ATOMICNEBULA_BASE_URL:-https://convex-actions.circeaura.com}/api/v1/atomicnebula/meetings?limit=50&cursor=<nextCursor>" | jq '.items'
 ```
 
-The response includes `totalCount` for calculating total pages.
+The response includes `nextCursor` and `hasMore` for sequential pagination.
 
 ## Common Use Cases
 

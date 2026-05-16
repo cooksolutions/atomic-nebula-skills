@@ -91,7 +91,7 @@ skills/atomicnebula-leads/scripts/an-leads.sh delete LEAD-ID
 - `--sort-by <field>`
 - `--sort-order <asc|desc>`
 - `--limit <n>`
-- `--offset <n>`
+- `--cursor <token>`
 
 ## Write Behavior
 

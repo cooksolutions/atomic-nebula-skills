@@ -25,6 +25,8 @@ metadata:
 
 Use this skill to write durable learnings back into Atomic Nebula's shared context layer. Captures are tenant-scoped, deduplicated by normalized content, linkable to known entities, and queued for future graph enrichment.
 
+This is the CirceAura/Atomic Nebula equivalent of an Open Brain-style capture protocol for Codex, Claude Code, OpenClaw, and future MCP clients. It is a behavioral protocol, not a hidden background hook.
+
 ## Configuration
 
 Credentials resolve in this order:
@@ -33,13 +35,15 @@ Credentials resolve in this order:
 2. `~/.config/circeaura/assistant-workspaces.json`
 3. Legacy `~/.openclaw/openclaw.json`
 
-Use `--env <workspace>` to target a configured workspace.
+Use `--env <workspace>` to target a configured workspace. The Codex MCP server is write-capable and must be registered with an explicit workspace; do not rely on the local default workspace for captures.
 
 ## Supported Endpoints
 
 - `POST /api/v1/atomicnebula/context/captures`
 - `GET /api/v1/atomicnebula/context/captures`
 - `GET /api/v1/atomicnebula/context/captures/:id`
+- `GET /api/v1/atomicnebula/context/entity/:type/:id` includes linked captures when the key has `atomicnebula:context:read`
+- `GET /api/v1/atomicnebula/context-pack/domain/:domainKey` includes promoted capture memory after enrichment
 
 ## Helper Script
 
@@ -91,6 +95,15 @@ Skip:
 - facts that are already in canonical product records unless the capture adds interpretation
 
 Each capture should be self-contained enough to be useful months later without reopening the original chat.
+
+To feed a capture into a domain context pack, include metadata with:
+
+- `domainKey`: the target context-pack domain, for example `codebase.circeaura.atomic-nebula.context-platform`
+- `memoryKind`: optional `implementation_note`, `review_finding`, `rejected_approach`, `unresolved_question`, or `session_summary`
+
+The enrichment cron promotes domain-keyed captures into `an_memory_items`, where they become visible through the domain context-pack endpoint.
+
+Codex can use the registered `atomicnebula_context` MCP server when available. It exposes `capture_context`, `search_context_captures`, `list_context_captures`, `get_context_capture`, `get_entity_context`, and `get_domain_context_pack`. The server refuses to start without `--env <workspace>` unless `ATOMICNEBULA_CONTEXT_MCP_ALLOW_DEFAULT_WORKSPACE=1` is set for a deliberate local experiment.
 
 ## Session-Close Examples
 

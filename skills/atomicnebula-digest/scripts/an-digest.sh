@@ -62,11 +62,12 @@ Global Options:
 
 Today Options:
   --date <YYYY-MM-DD>    Target date (default: today)
+  --timezone <iana>      Override resolved user/workspace timezone
   --channels <list>      Filter channels: email,sms or "all" (default: all)
   --details              Include full item lists
 
 Briefing Options:
-  (none - always returns concise summary)
+  --timezone <iana>      Override resolved user/workspace timezone
 
 Emails Options:
   --limit <n>            Number of emails to return (default: 5, max: 20)
@@ -82,6 +83,7 @@ Due Options:
 
 Upcoming Options:
   --days <n>             Days to include (default: 5, max: 14)
+  --timezone <iana>      Override resolved user/workspace timezone
 
 Notified Options:
   --keys <csv>           Comma-separated notification keys (required)
@@ -237,6 +239,7 @@ build_query_string() {
       --min-urgency) add_param "minUrgency" "$2"; shift 2 ;;
       --days) add_param "daysAhead" "$2"; shift 2 ;;
       --date) add_param "date" "$2"; shift 2 ;;
+      --timezone) add_param "timezone" "$2"; shift 2 ;;
       --channels) add_param "channels" "$2"; shift 2 ;;
       --details) add_param "includeDetails" "true"; shift ;;
       --env) shift 2 ;; # Already handled by extract_env_flag
@@ -263,6 +266,12 @@ get_today() {
 
   echo "$response" | jq '{
     date: .data.meta.date,
+    timezone: {
+      name: .data.meta.timezone,
+      source: .data.meta.timezoneSource,
+      localTime: .data.meta.localTime,
+      note: .data.meta.temporalContext
+    },
     completed: .data.completed.summary,
     pending: {
       critical: .data.pending.byUrgency.critical | length,
@@ -286,18 +295,27 @@ get_today() {
 }
 
 get_briefing() {
+  local query
+  query=$(build_query_string --details --days 1 "$@")
+
   echo "${ENV_PREFIX}📰 Briefing"
   echo ""
 
   # Get condensed digest with details for top items
   local digest_json
-  digest_json=$(api_call "${BASE_URL}/api/v1/atomicnebula/digest?includeDetails=true&daysAhead=1") || return 1
+  digest_json=$(api_call "${BASE_URL}/api/v1/atomicnebula/digest${query}") || return 1
 
   # Parse and format briefing
   echo "$digest_json" | jq -r '
-    def format_time: if . == null then "" else (./1000 | strftime("%H:%M")) end;
+    def format_local_time:
+      if .startsAtLocal then (.startsAtLocal | split("T")[1] | .[0:5])
+      elif .startsAt == null then ""
+      else (.startsAt / 1000 | strftime("%H:%M"))
+      end;
 
     "Date: \(.data.meta.date)",
+    "Timezone: \(.data.meta.timezone) (\(.data.meta.timezoneSource)); local time \(.data.meta.localTime)",
+    "Time context: \(.data.meta.temporalContext)",
     "",
     "=== Completed ===",
     "Tasks: \(.data.completed.summary.tasksCompleted)  Meetings: \(.data.completed.summary.meetingsHeld)  Messages: \(.data.completed.summary.messagesReceived)",
@@ -309,7 +327,7 @@ get_briefing() {
     (.data.upcoming.horizon[0] | (
       if .items.meetings | length > 0 then
         "Meetings:",
-        (.items.meetings[] | "  \(.startsAt | format_time) - \(.title)")
+        (.items.meetings[] | "  \(. | format_local_time) - \(.title)")
       else empty end,
       if .items.tasks | length > 0 then
         "Tasks due:",
@@ -456,6 +474,12 @@ get_upcoming() {
   response=$(api_call "${BASE_URL}/api/v1/atomicnebula/digest${query}") || return 1
 
   echo "$response" | jq '{
+    timezone: {
+      name: .data.meta.timezone,
+      source: .data.meta.timezoneSource,
+      localTime: .data.meta.localTime,
+      note: .data.meta.temporalContext
+    },
     horizon: [.data.upcoming.horizon[] | {
       date,
       dayName,

@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Atomic Nebula Content CLI Helper
+# Atomic Nebula Notebook CLI Helper
 #
-# Supports content item list/get/create/update, markdown body access,
+# Supports notebook item list/get/create/update, markdown body access,
 # and CRM entity linking through the Atomic Nebula external REST API.
 # Write calls send X-Run-Id and log approval challenges for webhook correlation.
 #
@@ -46,18 +46,18 @@ ENV_PREFIX=$(print_env_prefix)
 
 usage() {
   cat << 'USAGE'
-Atomic Nebula Content CLI
+Atomic Nebula Notebook CLI
 
-Usage: an-content.sh [--env <workspace>] <command> [options]
+Usage: an-notebook.sh [--env <workspace>] <command> [options]
 
 Commands:
-  list                            List content items
-  get <contentId>                 Get one content item
-  markdown <contentId>            Read markdown for a content item
-  create                          Create a content item
-  update <contentId>              Update content item metadata
-  set-markdown <contentId>        Replace markdown for a document-backed content item
-  link-entity <contentId>         Link a content item to a CRM entity
+  list                            List notebook items
+  get <notebookId>                Get one notebook item
+  markdown <notebookId>           Read markdown for a notebook item
+  create                          Create a notebook item
+  update <notebookId>             Update notebook item metadata
+  set-markdown <notebookId>       Replace markdown for a document-backed notebook item
+  link-entity <notebookId>        Link a notebook item to a CRM entity
 
 Global Options:
   --env <env>                     Target workspace slug (e.g., spider, dev, circeaurasupport)
@@ -108,14 +108,14 @@ link-entity Options:
   --link-type <value>
 
 Examples:
-  an-content.sh list --type content_idea --page 1 --page-size 20
-  an-content.sh get CONTENT-ID
-  an-content.sh markdown CONTENT-ID
-  an-content.sh create --title "March social idea" --content-type content_idea
-  an-content.sh create --title "Launch memo" --markdown-file ./memo.md
-  an-content.sh update CONTENT-ID --title "Updated title" --status archived --tag launch
-  an-content.sh set-markdown CONTENT-ID --file ./updated.md --expected-version 3 --conflict-strategy reject
-  an-content.sh link-entity CONTENT-ID --entity-type contact --entity-id CONTACT-ID
+  an-notebook.sh list --type content_idea --page 1 --page-size 20
+  an-notebook.sh get NOTEBOOK-ID
+  an-notebook.sh markdown NOTEBOOK-ID
+  an-notebook.sh create --title "March social idea" --content-type content_idea
+  an-notebook.sh create --title "Launch memo" --markdown-file ./memo.md
+  an-notebook.sh update NOTEBOOK-ID --title "Updated title" --status archived --tag launch
+  an-notebook.sh set-markdown NOTEBOOK-ID --file ./updated.md --expected-version 3 --conflict-strategy reject
+  an-notebook.sh link-entity NOTEBOOK-ID --entity-type contact --entity-id CONTACT-ID
 USAGE
 }
 
@@ -282,7 +282,7 @@ append_array_value() {
 }
 
 build_list_url() {
-  local url="${BASE_URL}/api/v1/atomicnebula/content/items"
+  local url="${BASE_URL}/api/v1/atomicnebula/notebook/items"
   local first=1
 
   add_query_param() {
@@ -324,22 +324,22 @@ command_list() {
 }
 
 command_get() {
-  local content_id="${1:-}"
-  if [[ -z "$content_id" ]]; then
-    echo "Error: contentId is required" >&2
+  local notebook_id="${1:-}"
+  if [[ -z "$notebook_id" ]]; then
+    echo "Error: notebookId is required" >&2
     exit 1
   fi
-  request_json "GET" "${BASE_URL}/api/v1/atomicnebula/content/items/${content_id}"
+  request_json "GET" "${BASE_URL}/api/v1/atomicnebula/notebook/items/${notebook_id}"
   print_or_fail "get"
 }
 
 command_markdown() {
-  local content_id="${1:-}"
-  if [[ -z "$content_id" ]]; then
-    echo "Error: contentId is required" >&2
+  local notebook_id="${1:-}"
+  if [[ -z "$notebook_id" ]]; then
+    echo "Error: notebookId is required" >&2
     exit 1
   fi
-  request_json "GET" "${BASE_URL}/api/v1/atomicnebula/content/items/${content_id}/markdown"
+  request_json "GET" "${BASE_URL}/api/v1/atomicnebula/notebook/items/${notebook_id}/markdown"
   print_or_fail "markdown"
 }
 
@@ -405,15 +405,15 @@ command_create() {
   payload=$(add_string_field "$payload" "entityId" "$entity_id")
   payload=$(merge_csv_into_array "$payload" "sourceAssetIds" "$source_asset_ids_csv")
 
-  request_json "POST" "${BASE_URL}/api/v1/atomicnebula/content/items" "$payload" "true"
+  request_json "POST" "${BASE_URL}/api/v1/atomicnebula/notebook/items" "$payload" "true"
   print_or_fail "create"
 }
 
 command_update() {
-  local content_id="${1:-}"
+  local notebook_id="${1:-}"
   shift || true
-  if [[ -z "$content_id" ]]; then
-    echo "Error: contentId is required" >&2
+  if [[ -z "$notebook_id" ]]; then
+    echo "Error: notebookId is required" >&2
     exit 1
   fi
 
@@ -445,15 +445,15 @@ command_update() {
     exit 1
   fi
 
-  request_json "PATCH" "${BASE_URL}/api/v1/atomicnebula/content/items/${content_id}" "$payload" "true"
+  request_json "PATCH" "${BASE_URL}/api/v1/atomicnebula/notebook/items/${notebook_id}" "$payload" "true"
   print_or_fail "update"
 }
 
 command_set_markdown() {
-  local content_id="${1:-}"
+  local notebook_id="${1:-}"
   shift || true
-  if [[ -z "$content_id" ]]; then
-    echo "Error: contentId is required" >&2
+  if [[ -z "$notebook_id" ]]; then
+    echo "Error: notebookId is required" >&2
     exit 1
   fi
 
@@ -489,15 +489,15 @@ command_set_markdown() {
   payload=$(add_number_field "$payload" "expectedVersion" "$expected_version")
   payload=$(add_string_field "$payload" "conflictStrategy" "$conflict_strategy")
 
-  request_json "PUT" "${BASE_URL}/api/v1/atomicnebula/content/items/${content_id}/markdown" "$payload" "true"
+  request_json "PUT" "${BASE_URL}/api/v1/atomicnebula/notebook/items/${notebook_id}/markdown" "$payload" "true"
   print_or_fail "set-markdown"
 }
 
 command_link_entity() {
-  local content_id="${1:-}"
+  local notebook_id="${1:-}"
   shift || true
-  if [[ -z "$content_id" ]]; then
-    echo "Error: contentId is required" >&2
+  if [[ -z "$notebook_id" ]]; then
+    echo "Error: notebookId is required" >&2
     exit 1
   fi
 
@@ -524,7 +524,7 @@ command_link_entity() {
   payload=$(add_string_field "$payload" "entityId" "$entity_id")
   payload=$(add_string_field "$payload" "linkType" "$link_type")
 
-  request_json "POST" "${BASE_URL}/api/v1/atomicnebula/content/items/${content_id}/entity-links" "$payload" "true"
+  request_json "POST" "${BASE_URL}/api/v1/atomicnebula/notebook/items/${notebook_id}/entity-links" "$payload" "true"
   print_or_fail "link-entity"
 }
 

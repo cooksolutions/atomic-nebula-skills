@@ -1,0 +1,8 @@
+interface:
+  display_name: "Notebook"
+  short_description: "Manage Atomic Nebula notebook items."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-notebook to list, inspect, create, update, or link Atomic Nebula notebook items."
+
+policy:
+  allow_implicit_invocation: true

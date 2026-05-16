@@ -49,7 +49,7 @@ skills/atomicnebula-contacts/scripts/an-contacts.sh update <contactId> --job-tit
 
 ## Commands
 
-- `list`: List contacts. Options: `--search`, `--page`, `--page-size`.
+- `list`: List contacts. Options: `--search`, `--limit`, `--cursor`.
 - `get <contactId>`: Fetch one contact.
 - `create`: Create a contact. Requires `--email` and `--confirm yes`.
 - `update <contactId>`: Update contact fields. Requires `--confirm yes`.

@@ -1,0 +1,8 @@
+interface:
+  display_name: "Products"
+  short_description: "Look up Atomic Nebula product prices and stock."
+  brand_color: "#1EBBBE"
+  default_prompt: "Use $atomicnebula-products to answer product existence, stock, availability, and price questions."
+
+policy:
+  allow_implicit_invocation: true

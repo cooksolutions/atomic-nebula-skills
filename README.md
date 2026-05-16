@@ -115,6 +115,18 @@ After credentials are configured, list available workspaces with:
 Use the equivalent installed path for Claude Code or OpenClaw if you installed
 there instead.
 
+## Typed Tool Adapter Direction
+
+The shell helpers remain the compatibility surface for filesystem-based agents
+and humans. Future typed adapters should stay domain-scoped and lazily loaded,
+for example `atomicnebula_email`, `atomicnebula_calendar`, or
+`atomicnebula_tasks`, rather than one large always-on tool surface.
+
+See `skills/shared/typed-tool-adapter-contract.md` for the shared multi-agent
+contract. MCP is one possible transport; the durable requirements are typed
+schemas, operation keys, safety metadata, workspace resolution, and rich tool
+descriptions.
+
 ## Usage
 
 Ask your agent to use an Atomic Nebula skill, for example:
@@ -136,13 +148,17 @@ Most scripts accept `--env <workspace>` to target a configured workspace:
 - `atomicnebula-calendar`
 - `atomicnebula-capture`
 - `atomicnebula-contacts`
-- `atomicnebula-content`
 - `atomicnebula-context`
 - `atomicnebula-digest`
 - `atomicnebula-email`
 - `atomicnebula-forms`
 - `atomicnebula-leads`
+- `atomicnebula-meetings`
+- `atomicnebula-notebook`
+- `atomicnebula-pipelines`
+- `atomicnebula-products`
 - `atomicnebula-projects`
+- `atomicnebula-social`
 - `atomicnebula-task-write`
 - `atomicnebula-tasks`
 - `atomicnebula-teams`

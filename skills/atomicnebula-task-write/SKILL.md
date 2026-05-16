@@ -104,20 +104,56 @@ curl -s -X POST -H "Authorization: Bearer $ATOMICNEBULA_API_KEY" \
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `title` | string | Yes | Task title |
-| `description` | string | No | Detailed description |
+| `description` | string | No | Detailed description (markdown). Alias: `bodyMarkdown` |
 | `category` | string | No | Category (default: "general") |
+| `subcategory` | string | No | Free-form subcategory tag |
+| `component` | string | No | Free-form component tag |
 | `priority` | string | No | Priority: high, medium, low (default: "medium") |
 | `projectId` | string | No | Project ID to link |
-| `ownerId` | string | No | Assignee user ID |
+| `sprintId` | string | No | Sprint ID to link |
+| `lifecyclePipelineId` | string | No | Lifecycle pipeline ID. Discover via `GET /lifecycle-pipelines?objectType=task` |
+| `lifecycleStageId` | string | No | Lifecycle stage ID within the chosen pipeline |
+| `parentTaskId` | string | No | Parent task ID for sub-task hierarchies |
+| `ownerId` | string | No | Assignee user ID (defaults to caller) |
 | `reporterId` | string | No | Reporter user ID |
+| `reviewerId` | string | No | Reviewer user ID |
 | `dueDate` | string | No | Due date (ISO format) |
 | `startDate` | string | No | Start date (ISO format) |
-| `reminderAt` | number | No | Reminder timestamp (epoch ms) |
+| `reminderAt` | number\|string | No | Reminder timestamp (epoch ms or ISO datetime) |
+| `estimatedHours` | number | No | Estimated effort in hours |
+| `effortPoints` | number | No | Story-point style effort estimate |
+| `dependencies` | array | No | Task IDs this task depends on |
+| `blocks` | array | No | Task IDs this task blocks |
+| `acceptanceCriteria` | array | No | Bullet-list of acceptance criteria |
 | `contactId` | string | No | Linked contact ID |
 | `companyId` | string | No | Linked company ID |
 | `dealId` | string | No | Linked deal ID |
+| `leadId` | string | No | Linked lead ID |
 | `labels` | array | No | Array of label strings |
 | `tags` | array | No | Array of tag strings |
+
+### Bulk Create Tasks
+
+Create up to 50 tasks in one request. Use this for imports and migrations so lazy numbering is batched by the backend:
+
+```bash
+curl -s -X POST -H "Authorization: Bearer $ATOMICNEBULA_API_KEY" \
+  -H "Content-Type: application/json" \
+  -H "X-Idempotency-Key: $(uuidgen)" \
+  "${ATOMICNEBULA_BASE_URL:-https://convex-actions.circeaura.com}/api/v1/atomicnebula/tasks" \
+  -d '{
+    "tasks": [
+      {
+        "clientRef": "row-1",
+        "title": "Import migrated task",
+        "description": "Created from import batch",
+        "projectId": "proj_abc123"
+      }
+    ]
+  }' | jq .
+```
+
+Bulk items accept the same fields as `Create Task`, plus optional `clientRef`. The response maps each `clientRef` to the created task id and allocated `taskId`.
 
 ### Update Task
 
@@ -136,21 +172,37 @@ curl -s -X PATCH -H "Authorization: Bearer $ATOMICNEBULA_API_KEY" \
 
 #### Update Parameters
 
+PATCH accepts the same fields as create (all optional), plus the ability to **clear** linked references by passing `null` for `projectId`, `sprintId`, `ownerId`, `reporterId`, `reviewerId`, `dueDate`, `startDate`, `parentTaskId`, `contactId`, `companyId`, `dealId`, or `leadId`. Pass `completedAt` (epoch ms) to mark complete, or use the `/complete` endpoint.
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `title` | string | New title |
-| `description` | string | New description |
+| `description` | string | New description (markdown). Alias: `bodyMarkdown` |
 | `category` | string | New category |
+| `subcategory` | string | Free-form subcategory tag |
+| `component` | string | Free-form component tag |
 | `priority` | string | New priority |
-| `ownerId` | string | New assignee |
-| `reporterId` | string | New reporter |
-| `dueDate` | string | New due date |
-| `startDate` | string | New start date |
+| `projectId` | string\|null | New project (null = unlink) |
+| `sprintId` | string\|null | New sprint (null = unlink) |
+| `lifecyclePipelineId` | string | New lifecycle pipeline |
+| `lifecycleStageId` | string | New lifecycle stage |
+| `parentTaskId` | string\|null | New parent task (null = unlink) |
+| `ownerId` | string\|null | New assignee (null = unassign) |
+| `reporterId` | string\|null | New reporter |
+| `reviewerId` | string\|null | New reviewer |
+| `dueDate` | string\|null | New due date |
+| `startDate` | string\|null | New start date |
 | `completedAt` | number | Mark complete (epoch ms) |
-| `reminderAt` | number | New reminder timestamp |
-| `contactId` | string | New linked contact |
-| `companyId` | string | New linked company |
-| `dealId` | string | New linked deal |
+| `reminderAt` | number\|string\|null | New reminder timestamp |
+| `estimatedHours` | number | Estimated hours |
+| `effortPoints` | number | Effort points |
+| `dependencies` | array | Replace dependency list |
+| `blocks` | array | Replace blocks list |
+| `acceptanceCriteria` | array | Replace AC bullets |
+| `contactId` | string\|null | New linked contact |
+| `companyId` | string\|null | New linked company |
+| `dealId` | string\|null | New linked deal |
+| `leadId` | string\|null | New linked lead |
 | `labels` | array | New labels |
 | `tags` | array | New tags |
 
